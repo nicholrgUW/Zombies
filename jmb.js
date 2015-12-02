@@ -1,3 +1,4 @@
+
 // find and replace JMB with your initials (i.e. ABC)
 // change this.name = "Your Chosen Name"
 
@@ -49,14 +50,17 @@ JMB.prototype.selectAction = function () {
     var acceleration = 1000000;
     var closest = 1000;
     var target = null;
-    this.visualRadius = 500;
+    this.visualRadius = 300;
 
     // moving away from zombies
     for (var i = 0; i < this.game.zombies.length; i++) {
         var ent = this.game.zombies[i];
         var dist = distance(ent, this);
+
+        // Note: tested throwing rocks at zombies that will arrive first. Less accurate,
+        // lower rock retrieval.
+        //var time = dist/ent.maxSpeed;
         if (dist < closest) {
-            // replace: target zombie that will get to you first, NOT the closest zombie
             closest = dist;
             target = ent;
         }
@@ -66,17 +70,40 @@ JMB.prototype.selectAction = function () {
             // Treat the player as the origin (0, 0)
             var difX = (ent.x - this.x) / dist;
             var difY = (ent.y - this.y) / dist;
-            action.direction.x -= difX * acceleration / (dist * dist);
-            action.direction.y -= difY * acceleration / (dist * dist);
+            action.direction.x -= 2 * difX * acceleration / (dist * dist);
+            action.direction.y -= 2 * difY * acceleration / (dist * dist);
         }
     }
 
+    // moving away from other players
+    for (var i = 0; i < this.game.players.length; i++) {
+        var ent = this.game.players[i];
+        var dist = distance(ent, this);
+        // avoid comparing to self (and the associated divided-by-zero errors)
+        if (dist != 0) {
+            // Only checking against players within visual radius
+            if (this.collide({x: ent.x, y: ent.y, radius: this.visualRadius})) {
+                // Treat the player as the origin (0, 0)
+                var difX = (ent.x - this.x) / dist;
+                var difY = (ent.y - this.y) / dist;
+                //action.direction.x -= 0.25 * difX * acceleration / (dist * dist);
+                //action.direction.y -= 0.25 * difY * acceleration / (dist * dist);
+            }
+        }
+    }
+
+    var closestRockDist = 1000;
+    var closestRock = null;
     // moving toward rocks
     for (var i = 0; i < this.game.rocks.length; i++) {
         var ent = this.game.rocks[i];
         // Chase a rock if not about to disappear, is not being thrown, if I have less than 2, if I can see it
-        if (!ent.removeFromWorld && !ent.thrown && this.rocks < 2 && this.collide({ x: ent.x, y: ent.y, radius: this.visualRadius })) {
+        if (!ent.removeFromWorld && /**!ent.thrown && */ this.rocks < 2 && this.collide({ x: ent.x, y: ent.y, radius: this.visualRadius })) {
             var dist = distance(this, ent);
+            if (dist < closestRockDist) {
+                closestRockDist = dist;
+                closestRock = ent;
+            }
             if (dist > this.radius + ent.radius) {
                 var difX = (ent.x - this.x) / dist;
                 var difY = (ent.y - this.y) / dist;
@@ -86,29 +113,40 @@ JMB.prototype.selectAction = function () {
         }
     }
 
-    // moving away from edges and corners
-    var cornerAllergy = this.cornerAllergy(acceleration);
-    var cornerDist = cornerAllergy.dist;
-    var cornerX = cornerAllergy.x;
-    var cornerY = cornerAllergy.y;
-    var correctionX = 0;
-    var correctionY = 0;
-    if (cornerDist > 200) {
-        correctionX = this.cornerCorrection(cornerDist, cornerX, acceleration, 100);
-        correctionY = this.cornerCorrection(cornerDist, cornerY, acceleration, 100);
-    } else if (cornerDist > 100) {
-        correctionX = this.cornerCorrection(cornerDist, cornerX, acceleration, 200);
-        correctionY = this.cornerCorrection(cornerDist, cornerY, acceleration, 200);
-    }
-    action.direction.x -= correctionX;
-    action.direction.y -= cornerAllergy.y;
-
     if (target) {
         action.target = this.mrSuluPlotAnInterceptCourse(target, target.velocity, this, new Rock().maxSpeed);
         if (action.target != null) {
             action.throwRock = true;
         }
     }
+
+    // If a rock is closer than any zombie, EMPHASIZE GRABBING THE ROCK
+    if (closestRockDist < closest) {
+        var difX = (closestRock.x - this.x) / dist;
+        var difY = (closestRock.y - this.y) / dist;
+        action.direction.x += 2 * difX * acceleration / (dist * dist);
+        action.direction.y += 2 * difY * acceleration / (dist * dist);
+    } else {
+        // moving away from edges and corners
+        var cornerAllergy = this.cornerAllergy(acceleration);
+        var centerDist = cornerAllergy.dist;
+        var cornerX = cornerAllergy.x;
+        var cornerY = cornerAllergy.y;
+        var correctionX = 0;
+        var correctionY = 0;
+        if (centerDist > 500) {
+            // Exit at a slight angle to reduce chance of getting trapped
+            correctionX = this.cornerCorrection(centerDist, cornerX, acceleration, 100);
+            correctionY = this.cornerCorrection(centerDist, cornerY, acceleration, 105);
+        } else if (centerDist > 300) {
+            // Exit at a slight angle to reduce chance of getting trapped
+            correctionX = this.cornerCorrection(centerDist, cornerX, acceleration, 200);
+            correctionY = this.cornerCorrection(centerDist, cornerY, acceleration, 205);
+        }
+        action.direction.x -= correctionX;
+        action.direction.y -= correctionY;
+    }
+
     return action;
 };
 
@@ -275,6 +313,7 @@ JMB.prototype.update = function () {
             }
         }
     }
+
 
     if (this.cooldown === 0 && this.action.throwRock && this.rocks > 0) {
         this.cooldown = 1;
