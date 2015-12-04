@@ -86,8 +86,8 @@ JMB.prototype.selectAction = function () {
                 // Treat the player as the origin (0, 0)
                 var difX = (ent.x - this.x) / dist;
                 var difY = (ent.y - this.y) / dist;
-                //action.direction.x -= 0.25 * difX * acceleration / (dist * dist);
-                //action.direction.y -= 0.25 * difY * acceleration / (dist * dist);
+                action.direction.x -= 0.25 * difX * acceleration / (dist * dist);
+                action.direction.y -= 0.25 * difY * acceleration / (dist * dist);
             }
         }
     }
