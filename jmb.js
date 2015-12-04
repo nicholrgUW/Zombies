@@ -112,7 +112,7 @@ JMB.prototype.selectAction = function () {
             }
         }
     }
-
+//this is where Robbie's changes start
     if (target) {
         action.target = this.mrSuluPlotAnInterceptCourse(target, target.velocity, this, new Rock().maxSpeed);
         dist = distance (this, target);
@@ -124,6 +124,8 @@ JMB.prototype.selectAction = function () {
                 console.log("thrown");
         }
     }
+//end
+
 
     // If a rock is closer than any zombie, EMPHASIZE GRABBING THE ROCK
     if (closestRockDist < closest) {
