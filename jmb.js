@@ -86,8 +86,8 @@ JMB.prototype.selectAction = function () {
                 // Treat the player as the origin (0, 0)
                 var difX = (ent.x - this.x) / dist;
                 var difY = (ent.y - this.y) / dist;
-                //action.direction.x -= 0.25 * difX * acceleration / (dist * dist);
-                //action.direction.y -= 0.25 * difY * acceleration / (dist * dist);
+                action.direction.x -= 0.25 * difX * acceleration / (dist * dist);
+                action.direction.y -= 0.25 * difY * acceleration / (dist * dist);
             }
         }
     }
@@ -115,8 +115,13 @@ JMB.prototype.selectAction = function () {
 
     if (target) {
         action.target = this.mrSuluPlotAnInterceptCourse(target, target.velocity, this, new Rock().maxSpeed);
-        if (action.target != null) {
+        dist = distance (this, target);
+
+//this is new, holds last rock until zomb is very close
+        if (action.target != null && (this.rocks > 1 || dist < 75)  ) {
             action.throwRock = true;
+            if(this.rocks === 1)
+                console.log("thrown");
         }
     }
 
