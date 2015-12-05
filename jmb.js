@@ -1,3 +1,10 @@
+/*
+ * name: Julia Behnen, Robbie Nichols, Jeffrey LeCompte
+ * assignment: Assignment 3 - Zombie Slayer Agents
+ * class: TCSS 435 AI - Dr. Chriss Marriot
+ */
+
+
 
 // find and replace JMB with your initials (i.e. ABC)
 // change this.name = "Your Chosen Name"
@@ -112,7 +119,7 @@ JMB.prototype.selectAction = function () {
             }
         }
     }
-//this is where Robbie's changes start
+
     if (target) {
         action.target = this.mrSuluPlotAnInterceptCourse(target, target.velocity, this, new Rock().maxSpeed);
         dist = distance (this, target);
@@ -122,7 +129,7 @@ JMB.prototype.selectAction = function () {
             action.throwRock = true;
         }
     }
-//end
+
 
 
     // If a rock is closer than any zombie, EMPHASIZE GRABBING THE ROCK
