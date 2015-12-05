@@ -118,10 +118,8 @@ JMB.prototype.selectAction = function () {
         dist = distance (this, target);
 
 //this is new, holds last rock until zomb is very close
-        if (action.target != null && (this.rocks > 1 || dist < 75)  ) {
+        if (action.target != null && (this.rocks > 1 || dist < 150 || this.kills < 1)  ) {
             action.throwRock = true;
-            if(this.rocks === 1)
-                console.log("thrown");
         }
     }
 //end
