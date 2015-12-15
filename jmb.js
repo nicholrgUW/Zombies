@@ -22,7 +22,7 @@ function JMB(game) {
     Entity.call(this, game, this.radius + Math.random() * (800 - this.radius * 2), this.radius + Math.random() * (800 - this.radius * 2));
 
     this.velocity = { x: 0, y: 0 };
-};
+}
 
 JMB.prototype = new Entity();
 JMB.prototype.constructor = JMB;
@@ -124,8 +124,14 @@ JMB.prototype.selectAction = function () {
         action.target = this.mrSuluPlotAnInterceptCourse(target, target.velocity, this, new Rock().maxSpeed);
         dist = distance (this, target);
 
-//this is new, holds last rock until zomb is very close
-        if (action.target != null && (this.rocks > 1 || dist < 150 || this.kills < 1)  ) {
+        // this is new, holds last rock until zomb is very close
+        // added second part where player will only throw (1 of 2 rocks) when the
+        // zombie is within certain range (more likely to hit it).
+        if (action.target != null && this.rocks === 2 && (dist < 200 || this.kills < 1)) {
+            action.throwRock = true;
+        }
+
+        if (action.target != null && this.rocks === 1 && (dist < 100 || this.kills < 1)) {
             action.throwRock = true;
         }
     }
@@ -221,7 +227,7 @@ JMB.prototype.mrSuluPlotAnInterceptCourse = function(a, v, b, s) {
     var targetX = a.x + t * v.x;
     var targetY = a.y + t * v.y;
     return { x: targetX, y: targetY };
-}
+};
 
 JMB.prototype.cornerAllergy = function(acceleration) {
     var center = {x: 400, y: 400};
@@ -231,11 +237,11 @@ JMB.prototype.cornerAllergy = function(acceleration) {
     //correctionX = (Math.exp(dist/100) - 1.5) * difX * acceleration / (dist * dist);
     //correctionY = (Math.exp(dist/100) - 1.5) * difY * acceleration / (dist * dist);
     return {x: difX, y: difY, dist: dist};
-}
+};
 
 JMB.prototype.cornerCorrection = function(dist, diff, acceleration, divisor) {
     return (Math.exp(dist/divisor) - 1) * diff * acceleration / (dist * dist);
-}
+};
 
 // do not change code beyond this point
 
